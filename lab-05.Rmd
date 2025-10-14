@@ -76,5 +76,67 @@ dn_lq_ak <- dn_lq_ak %>%
 ```
 
 ...
+### Exercise 7
+```{r exercise7}
+dn_lq_ak_mindist <- dn_lq_ak %>%
+  group_by(address.x) %>%
+  summarize(closest = min(distance))
+```
 
-Add exercise headings as needed.
+### Exercise 8
+
+```{r exercise8}
+#every dennys has a laquinta within six miles 
+#from lab 4
+dn <- dennys %>%
+  mutate(establishment = "Denny's")
+lq <- laquinta %>%
+  mutate(establishment = "La Quinta")
+dn_lq <- bind_rows(dn, lq)
+# made the new combined variable successfully 
+ggplot(dn_lq, mapping = aes(
+  x = longitude,
+  y = latitude,
+  color = establishment
+)) +
+  geom_point()
+
+AKonly <- dn_lq %>%
+  filter(state == "AK")
+ggplot(AKonly, mapping = aes(
+  x = longitude,
+  y = latitude,
+  color = establishment
+)) +
+  geom_point()
+#you can see that the dennys and laqintas are clustered together.
+#and from number 7 the greatest minimum distance between a laquinta and dennys was just under 6 miles, and the least minimum distance was around 2 miles. 
+```
+### Exercise 9
+```{r exercise9}
+dn_nc <- dennys %>%
+  filter(state == "NC")
+
+lq_nc <- laquinta %>%
+  filter(state == "NC")
+
+dn_lq_nc <- full_join(dn_nc, lq_nc,
+  by = "state"
+)
+dn_lq_ak
+#this built the pairings for NC dennys and laquinta locations
+#below I am going to mutate so that we have distance
+
+dn_lq_nc <- dn_lq_nc %>%
+  mutate(distance = haversine(longitude.x,latitude.x,longitude.y,latitude.y))
+
+#finally I'm going to get the minimum distance
+
+dn_lq_nc_mindist <- dn_lq_nc %>%
+  group_by(address.x) %>%
+  summarize(closest = min(distance))
+
+#not sure how to visualize this 
+the closets dennys to a laquinta ranged from around a mile to 187 miles. Much more spread out / not clustered together compared to alaska. 
+
+```

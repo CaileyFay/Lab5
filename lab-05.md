@@ -105,6 +105,50 @@ dn_lq_ak <- dn_lq_ak %>%
   mutate(distance = haversine(longitude.x,latitude.x,longitude.y,latitude.y))
 ```
 
-…
+… \### Exercise 7
+
+``` r
+dn_lq_ak_mindist <- dn_lq_ak %>%
+  group_by(address.x) %>%
+  summarize(closest = min(distance))
+```
+
+### Exercise 8
+
+``` r
+#every dennys has a laquinta within six miles 
+#from lab 4
+dn <- dennys %>%
+  mutate(establishment = "Denny's")
+lq <- laquinta %>%
+  mutate(establishment = "La Quinta")
+dn_lq <- bind_rows(dn, lq)
+# made the new combined variable successfully 
+ggplot(dn_lq, mapping = aes(
+  x = longitude,
+  y = latitude,
+  color = establishment
+)) +
+  geom_point()
+```
+
+![](lab-05_files/figure-gfm/exercise8-1.png)<!-- -->
+
+``` r
+AKonly <- dn_lq %>%
+  filter(state == "AK")
+ggplot(AKonly, mapping = aes(
+  x = longitude,
+  y = latitude,
+  color = establishment
+)) +
+  geom_point()
+```
+
+![](lab-05_files/figure-gfm/exercise8-2.png)<!-- -->
+
+``` r
+#you can see that the dennys and laqintas are clustered together.
+```
 
 Add exercise headings as needed.
