@@ -18,28 +18,54 @@ states <- read_csv("data/states.csv")
 
 ### Exercise 1
 
-Remove this text, and add your answer for Exercise 1 here.
-Add code chunks as needed.
-Don't forget to label your code chunk.
-Do not use spaces in code chunk labels.
+```{r exercise1}
+dn_ak <- dennys %>%
+  filter(state == "AK")
+nrow(dn_ak)
+
+lq_ak <- laquinta %>%
+  filter(state == "AK")
+
+nrow(lq_ak)
+
+#there are 3 dennys and 2 laquintas in alaska.
+```
 
 ### Exercise 2
 
-Remove this text, and add your answer for Exercise 1 here.
-Add code chunks as needed.
-Don't forget to label your code chunk.
-Do not use spaces in code chunk labels.
+```{r exercise2}
+#6 pairings- how tf do you code this though?
 
-### Exercise 3
+```
+### Exercise 3 and 4
+``` {r exercise3 and 4}
+dn_lq_ak <- full_join(dn_ak, lq_ak,
+  by = "state"
+)
+dn_lq_ak
 
-...
+#there are 6 observations. Each row has the x (alaska dennys) location info and the y (alaska laquinta) location. 
 
-### Exercise 4
-
-...
+```
 
 ### Exercise 5
+``` {r exercise 5}
+#we use the mutate function 
+haversine <- function(long1, lat1, long2, lat2, round = 3) {
+  # convert to radians
+  long1 <- long1 * pi / 180
+  lat1 <- lat1 * pi / 180
+  long2 <- long2 * pi / 180
+  lat2 <- lat2 * pi / 180
 
+  R <- 6371 # Earth mean radius in km
+
+  a <- sin((lat2 - lat1) / 2)^2 + cos(lat1) * cos(lat2) * sin((long2 - long1) / 2)^2
+  d <- R * 2 * asin(sqrt(a))
+
+  return(round(d, round)) # distance in km
+}
+```
 ...
 
 ### Exercise 6
