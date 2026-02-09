@@ -10,6 +10,7 @@ output: github_document
 ```{r load-packages, message = FALSE}
 library(tidyverse) 
 library(dsbox) 
+library(lemon)
 ```
 
 ```{r load-data, message = FALSE}
@@ -17,7 +18,6 @@ states <- read_csv("data/states.csv")
 ```
 
 ### Exercise 1
-
 ```{r exercise1}
 dn_ak <- dennys %>%
   filter(state == "AK")
@@ -27,30 +27,34 @@ lq_ak <- laquinta %>%
   filter(state == "AK")
 
 nrow(lq_ak)
-
-#there are 3 dennys and 2 laquintas in alaska.
 ```
+
+There are `r nrow(dn_ak)` Denny's and `r nrow(lq_ak)` Laquinta's in Alaska. 
 
 ### Exercise 2
 
+There are 6 Pairings.
 ```{r exercise2}
-#6 pairings- how tf do you code this though?
+#NEED TO ENTER IN HOW TO CODE THIS 
+#How many ways can you arrange 3 dennys and 2 lqs? 
 
 ```
 ### Exercise 3 and 4
 ``` {r exercise3 and 4}
-dn_lq_ak <- full_join(dn_ak, lq_ak,
-  by = "state"
-)
-dn_lq_ak
 
-#there are 6 observations. Each row has the x (alaska dennys) location info and the y (alaska laquinta) location. 
+dn_lq_ak <- full_join(dn_ak, lq_ak,
+  by = "state")
+dn_lq_ak
 
 ```
 
+There are `r nrow(dn_lq_ak)` observations, each representing a denny's and laquinta pairing in Alaska. 
+
 ### Exercise 5
+
+We use the mutate function! 
 ``` {r exercise 5}
-#we use the mutate function 
+
 haversine <- function(long1, lat1, long2, lat2, round = 3) {
   # convert to radians
   long1 <- long1 * pi / 180
@@ -70,6 +74,7 @@ haversine <- function(long1, lat1, long2, lat2, round = 3) {
 
 ### Exercise 6
 ```{r exercise6}
+
 dn_lq_ak <- dn_lq_ak %>%
   mutate(distance = haversine(longitude.x,latitude.x,longitude.y,latitude.y))
 
@@ -84,23 +89,28 @@ dn_lq_ak_mindist <- dn_lq_ak %>%
 ```
 
 ### Exercise 8
-
 ```{r exercise8}
-#every dennys has a laquinta within six miles 
-#from lab 4
+
+#From Lab 4, visualization of Dennys and Laquintas throughout the United States.
 dn <- dennys %>%
   mutate(establishment = "Denny's")
+
 lq <- laquinta %>%
   mutate(establishment = "La Quinta")
+
 dn_lq <- bind_rows(dn, lq)
-# made the new combined variable successfully 
+
 ggplot(dn_lq, mapping = aes(
   x = longitude,
   y = latitude,
   color = establishment
 )) +
-  geom_point()
+  geom_point() +
+  labs(title = "Denny's and Laquintas in the United States",
+       x = "Longitude",
+       y = "Latitude")
 
+# Looking at the map of Alaska only. 
 AKonly <- dn_lq %>%
   filter(state == "AK")
 ggplot(AKonly, mapping = aes(
@@ -108,10 +118,15 @@ ggplot(AKonly, mapping = aes(
   y = latitude,
   color = establishment
 )) +
-  geom_point()
-#you can see that the dennys and laqintas are clustered together.
-#and from number 7 the greatest minimum distance between a laquinta and dennys was just under 6 miles, and the least minimum distance was around 2 miles. 
+  geom_point()  +
+  labs(title = "Denny's and Laquintas in Alaska",
+       x = "Longitude",
+       y = "Latitude")
+
 ```
+
+Every Denny's has a Laquinta within six miles, according to the minimum distance variable created in exercise 7. The average distance is `r mean(dn_lq_ak_mindist$closest)` with a standard deviation of `r sd(dn_lq_ak_mindist$closest)`. 
+
 ### Exercise 9
 ```{r exercise9}
 dn_nc <- dennys %>%
@@ -121,22 +136,139 @@ lq_nc <- laquinta %>%
   filter(state == "NC")
 
 dn_lq_nc <- full_join(dn_nc, lq_nc,
-  by = "state"
-)
-dn_lq_ak
-#this built the pairings for NC dennys and laquinta locations
-#below I am going to mutate so that we have distance
+  by = "state")
 
 dn_lq_nc <- dn_lq_nc %>%
   mutate(distance = haversine(longitude.x,latitude.x,longitude.y,latitude.y))
-
-#finally I'm going to get the minimum distance
 
 dn_lq_nc_mindist <- dn_lq_nc %>%
   group_by(address.x) %>%
   summarize(closest = min(distance))
 
-#not sure how to visualize this 
-the closets dennys to a laquinta ranged from around a mile to 187 miles. Much more spread out / not clustered together compared to alaska. 
+dn_lq_nc_mindist %>%
+  ggplot(aes(x=closest)) +
+  geom_histogram(binwidth = 25) +
+  labs(title ="Distribution of Minimum Distances Between Denny's and Laquinta's",
+       subtitle = "In North Carolina",
+       x= "Miles",
+       y = "Frequency")
 
+```
+
+On average, there is an Laquinta within `r mean(dn_lq_nc_mindist$closest)` miles of a dennys, with a standard deviation of `r sd(dn_lq_nc_mindist$closest)`. This distribution is much more spread out than alaska, with some "nearest pairings" close by, and others really far apart. The farthest Denny's to a Laquinta is 187 miles. 
+
+### Exercise 10
+```{r}
+dn_tx <- dennys %>%
+  filter(state == "TX")
+
+lq_tx <- laquinta %>%
+  filter(state == "TX")
+
+dn_lq_tx <- full_join(dn_tx, lq_tx,
+  by = "state")
+
+dn_lq_tx <- dn_lq_tx %>%
+  mutate(distance = haversine(longitude.x,latitude.x,longitude.y,latitude.y))
+
+dn_lq_tx_mindist <- dn_lq_tx %>%
+  group_by(address.x) %>%
+  summarize(closest = min(distance))
+
+dn_lq_tx_mindist %>%
+  ggplot(aes(x=closest)) +
+  geom_density() +
+   labs(title ="Distribution of Minimum Distances Between Denny's and Laquinta's",
+       subtitle = "In Texas",
+       x= "Miles",
+       y = "Frequency")
+
+```
+
+On average, there is an Laquinta within `r mean(dn_lq_tx_mindist$closest)` miles of a dennys, with a standard deviation of `r sd(dn_lq_tx_mindist$closest)`. This distribution is much more condensed than North Carolina, with some "nearest pairings" close by, and others really far apart. The farthest Denny's to a Laquinta is 60 miles, but many locations are within 1/2 a mile. 
+
+### Exercise 11
+```{r exercise 11}
+
+dn_fl <- dennys %>%
+  filter(state == "FL")
+
+lq_fl <- laquinta %>%
+  filter(state == "FL")
+
+dn_lq_fl <- full_join(dn_fl, lq_fl,
+  by = "state")
+
+dn_lq_fl <- dn_lq_fl %>%
+  mutate(distance = haversine(longitude.x,latitude.x,longitude.y,latitude.y))
+
+dn_lq_fl_mindist <- dn_lq_fl %>%
+  group_by(address.x) %>%
+  summarize(closest = min(distance))
+
+dn_lq_fl_mindist %>%
+  ggplot(aes(x=closest)) +
+  geom_density() +
+   labs(title ="Distribution of Minimum Distances Between Denny's and Laquinta's",
+       subtitle = "In Florida",
+       x= "Miles",
+       y = "Frequency")
+
+```
+
+On average, there is an Laquinta within `r mean(dn_lq_fl_mindist$closest)` miles of a dennys, with a standard deviation of `r sd(dn_lq_fl_mindist$closest)`. This distribution is much more condensed than North Carolina, with some "nearest pairings" close by, and others really far apart. The farthest Denny's to a Laquinta is 176 miles, but many locations are within a mile or two. The 176 mile one is very much an outlier, as is the one that is 90 miles away. 
+
+### Exercise 12 
+
+I think the joke is most true for Texas, because the proportion of Denny's within a mile from a Laquinta is greatest, adjusting for the total number of Dennys in the state. 56/200 are within a mile in Texas, whereas 13/139 are within a mile in Florida. 
+
+```{r}
+dn_lq_ak_mindist %>%
+  filter(closest < 1) %>%
+  count()
+#none are within 0 miles in Alaska 
+
+dn_lq_nc_mindist %>%
+  filter(closest < 1) %>%
+  count()
+#none are within 0 miles in North Carolina 
+
+dn_lq_tx_mindist %>%
+  filter(closest < 1) %>%
+  count()
+#there are 56 within 0 miles in Texas 
+#out of 200
+
+dn_lq_fl_mindist %>%
+  filter(closest < 1) %>%
+  count()
+#There are 16 within 0 miles in Florida 
+# out of 139
+
+```
+
+
+### Trying to recreate those plots: Not quite recreated but as much time as I am willing to invest. 
+```{r}
+dn_lq_dist <- full_join(dn, lq, by = "state")
+
+dn_lq_dist <- dn_lq_dist %>%
+  mutate(distance = haversine(longitude.x,latitude.x,longitude.y,latitude.y))
+
+dn_lq_mindist <- dn_lq_dist %>%
+  group_by(address.x) %>%
+  mutate(closest = min(distance))
+
+dn_lq_mindist %>%
+  filter(state %in% c("NC","ND","NE","NH","NJ","NM","NV","NY")) %>%
+  ggplot(aes(x=closest, fill=state)) +
+  geom_density() +
+  facet_grid(state ~ ., switch = "y", scales = "free_y") +
+  theme_minimal() +
+  theme(axis.text.y = element_blank()) +
+  labs(title = "Minimum Distances Between Denny's and Laquinta's By State",
+       x = "Nearest Location (In Miles)",
+       y = "Density",
+       legend = "State")
+ 
 ```
