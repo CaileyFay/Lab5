@@ -8,6 +8,7 @@ Cailey Fay
 ``` r
 library(tidyverse) 
 library(dsbox) 
+library(lemon)
 ```
 
 ``` r
@@ -40,8 +41,7 @@ There are 3 Denny’s and 2 Laquinta’s in Alaska.
 There are 6 Pairings.
 
 ``` r
-#NEED TO ENTER IN HOW TO CODE THIS 
-#How many ways can you arrange 3 dennys and 2 lqs? 
+pairings <- nrow(dn_ak)*nrow(lq_ak)
 ```
 
 ### Exercise 3 and 4
@@ -232,7 +232,7 @@ dn_lq_tx_mindist <- dn_lq_tx %>%
 
 dn_lq_tx_mindist %>%
   ggplot(aes(x=closest)) +
-  geom_histogram(binwidth = 5) +
+  geom_density() +
    labs(title ="Distribution of Minimum Distances Between Denny's and Laquinta's",
        subtitle = "In Texas",
        x= "Miles",
@@ -276,7 +276,7 @@ dn_lq_fl_mindist <- dn_lq_fl %>%
 
 dn_lq_fl_mindist %>%
   ggplot(aes(x=closest)) +
-  geom_histogram(binwidth = 5) +
+  geom_density() +
    labs(title ="Distribution of Minimum Distances Between Denny's and Laquinta's",
        subtitle = "In Florida",
        x= "Miles",
@@ -293,3 +293,102 @@ miles, but many locations are within a mile or two. The 176 mile one is
 very much an outlier, as is the one that is 90 miles away.
 
 ### Exercise 12
+
+I think the joke is most true for Texas, because the proportion of
+Denny’s within a mile from a Laquinta is greatest, adjusting for the
+total number of Dennys in the state. 56/200 are within a mile in Texas,
+whereas 13/139 are within a mile in Florida.
+
+``` r
+dn_lq_ak_mindist %>%
+  filter(closest < 1) %>%
+  count()
+```
+
+    ## # A tibble: 1 × 1
+    ##       n
+    ##   <int>
+    ## 1     0
+
+``` r
+#none are within 0 miles in Alaska 
+
+dn_lq_nc_mindist %>%
+  filter(closest < 1) %>%
+  count()
+```
+
+    ## # A tibble: 1 × 1
+    ##       n
+    ##   <int>
+    ## 1     0
+
+``` r
+#none are within 0 miles in North Carolina 
+
+dn_lq_tx_mindist %>%
+  filter(closest < 1) %>%
+  count()
+```
+
+    ## # A tibble: 1 × 1
+    ##       n
+    ##   <int>
+    ## 1    56
+
+``` r
+#there are 56 within 0 miles in Texas 
+#out of 200
+
+dn_lq_fl_mindist %>%
+  filter(closest < 1) %>%
+  count()
+```
+
+    ## # A tibble: 1 × 1
+    ##       n
+    ##   <int>
+    ## 1    16
+
+``` r
+#There are 16 within 0 miles in Florida 
+# out of 139
+```
+
+### Trying to recreate those plots: Not quite recreated but as much time as I am willing to invest.
+
+``` r
+dn_lq_dist <- full_join(dn, lq, by = "state")
+```
+
+    ## Warning in full_join(dn, lq, by = "state"): Detected an unexpected many-to-many relationship between `x` and `y`.
+    ## ℹ Row 1 of `x` matches multiple rows in `y`.
+    ## ℹ Row 23 of `y` matches multiple rows in `x`.
+    ## ℹ If a many-to-many relationship is expected, set `relationship =
+    ##   "many-to-many"` to silence this warning.
+
+``` r
+dn_lq_dist <- dn_lq_dist %>%
+  mutate(distance = haversine(longitude.x,latitude.x,longitude.y,latitude.y))
+
+dn_lq_mindist <- dn_lq_dist %>%
+  group_by(address.x) %>%
+  mutate(closest = min(distance))
+
+dn_lq_mindist %>%
+  filter(state %in% c("NC","ND","NE","NH","NJ","NM","NV","NY")) %>%
+  ggplot(aes(x=closest, fill=state)) +
+  geom_density() +
+  facet_grid(state ~ ., switch = "y", scales = "free_y") +
+  theme_minimal() +
+  theme(axis.text.y = element_blank()) +
+  labs(title = "Minimum Distances Between Denny's and Laquinta's By State",
+       x = "Nearest Location (In Miles)",
+       y = "Density",
+       legend = "State")
+```
+
+    ## Ignoring unknown labels:
+    ## • legend : "State"
+
+![](lab-05_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->

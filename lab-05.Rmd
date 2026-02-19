@@ -35,9 +35,7 @@ There are `r nrow(dn_ak)` Denny's and `r nrow(lq_ak)` Laquinta's in Alaska.
 
 There are 6 Pairings.
 ```{r exercise2}
-#NEED TO ENTER IN HOW TO CODE THIS 
-#How many ways can you arrange 3 dennys and 2 lqs? 
-
+pairings <- nrow(dn_ak)*nrow(lq_ak)
 ```
 ### Exercise 3 and 4
 ``` {r exercise3 and 4}
